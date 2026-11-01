@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "chunk_limiter_hud",
+  "version": "${version}",
+  "name": "Chunk Limiter HUD",
+  "description": "Counts configured entities and blocks in the player's current chunk and compares them with custom limits.",
+  "authors": ["mbra2"],
+  "license": "CC0-1.0",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["ru.chunklimiterhud.client.ChunkLimiterHudClient"],
+    "modmenu": ["ru.chunklimiterhud.client.ModMenuIntegration"]
+  },
+  "mixins": [
+    {
+      "config": "chunk_limiter_hud.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": ">=0.159.0"
+  },
+  "suggests": {
+    "modmenu": ">=20.0.0"
+  }
+}

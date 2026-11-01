@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "ru.chunklimiterhud.client.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "EntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
