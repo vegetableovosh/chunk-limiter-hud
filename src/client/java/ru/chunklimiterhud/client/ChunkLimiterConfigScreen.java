@@ -55,6 +55,10 @@ final class ChunkLimiterConfigScreen extends Screen {
             config.highlightOverloadedEntities = !config.highlightOverloadedEntities;
             changed();
         });
+        addToggle(left + 222, 55, Math.max(70, panelWidth - 304), "Только нулевые", config.showOnlyNonZero, button -> {
+            config.showOnlyNonZero = !config.showOnlyNonZero;
+            changed();
+        });
 
         addRenderableWidget(Button.builder(Component.literal("Блоки"), button -> {
             entityTab = false;

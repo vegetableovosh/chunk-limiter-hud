@@ -4,7 +4,6 @@
   "version": "${version}",
   "name": "Chunk Limiter HUD",
   "description": "Counts configured entities and blocks in the player's current chunk and compares them with custom limits.",
-  "icon": "assets/chunk_limiter_hud/icon.png",
   "authors": ["mbra2"],
   "license": "CC0-1.0",
   "environment": "client",
