@@ -14,6 +14,16 @@ import java.util.List;
 import java.util.Map;
 
 final class ChunkLimiterConfigScreen extends Screen {
+    private static final int HEADER_Y = 28;
+    private static final int TOGGLE_GAP = 6;
+    private static final int SMALL_TOGGLE_WIDTH = 112;
+    private static final int BLOCK_TOGGLE_WIDTH = 170;
+    private static final int MIN_ENTITY_TOGGLE_WIDTH = 100;
+    private static final int NAVIGATION_Y = 55;
+    private static final int FILTER_X_OFFSET = 222;
+    private static final int PAGING_AREA_WIDTH = 82;
+    private static final int MIN_FILTER_WIDTH = 70;
+
     private final Screen parent;
     private boolean entityTab;
     private int page;
@@ -39,23 +49,36 @@ final class ChunkLimiterConfigScreen extends Screen {
         firstRowY = 82;
         rowCount = Math.max(3, (height - 182) / 25);
 
-        addToggle(left, 28, 112, "Мод", config.enabled, button -> {
+        int modToggleX = left;
+        int hudToggleX = modToggleX + SMALL_TOGGLE_WIDTH + TOGGLE_GAP;
+        int blockToggleX = hudToggleX + SMALL_TOGGLE_WIDTH + TOGGLE_GAP;
+        int entityToggleX = blockToggleX + BLOCK_TOGGLE_WIDTH + TOGGLE_GAP;
+        int entityToggleWidth = Math.max(
+                MIN_ENTITY_TOGGLE_WIDTH,
+                panelWidth - (entityToggleX - left)
+        );
+
+        addToggle(modToggleX, HEADER_Y, SMALL_TOGGLE_WIDTH, "Мод", config.enabled, button -> {
             config.enabled = !config.enabled;
             changed();
         });
-        addToggle(left + 118, 28, 112, "HUD", config.hudEnabled, button -> {
+        addToggle(hudToggleX, HEADER_Y, SMALL_TOGGLE_WIDTH, "HUD", config.hudEnabled, button -> {
             config.hudEnabled = !config.hudEnabled;
             changed();
         });
-        addToggle(left + 236, 28, 170, "Красить блоки", config.highlightOverloadedBlocks, button -> {
+        addToggle(blockToggleX, HEADER_Y, BLOCK_TOGGLE_WIDTH, "Красить блоки", config.highlightOverloadedBlocks, button -> {
             config.highlightOverloadedBlocks = !config.highlightOverloadedBlocks;
             changed();
         });
-        addToggle(left + 412, 28, Math.max(100, panelWidth - 412), "Красить сущности", config.highlightOverloadedEntities, button -> {
+        addToggle(entityToggleX, HEADER_Y, entityToggleWidth, "Красить сущности", config.highlightOverloadedEntities, button -> {
             config.highlightOverloadedEntities = !config.highlightOverloadedEntities;
             changed();
         });
-        addToggle(left + 222, 55, Math.max(70, panelWidth - 304), "Только нулевые", config.showOnlyNonZero, button -> {
+        int filterWidth = Math.max(
+                MIN_FILTER_WIDTH,
+                panelWidth - FILTER_X_OFFSET - PAGING_AREA_WIDTH
+        );
+        addToggle(left + FILTER_X_OFFSET, NAVIGATION_Y, filterWidth, "Только ненулевые", config.showOnlyNonZero, button -> {
             config.showOnlyNonZero = !config.showOnlyNonZero;
             changed();
         });
