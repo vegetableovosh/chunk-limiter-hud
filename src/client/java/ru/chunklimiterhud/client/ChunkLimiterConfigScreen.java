@@ -58,19 +58,19 @@ final class ChunkLimiterConfigScreen extends Screen {
                 panelWidth - (entityToggleX - left)
         );
 
-        addToggle(modToggleX, HEADER_Y, SMALL_TOGGLE_WIDTH, "Мод", config.enabled, button -> {
+        addToggle(modToggleX, HEADER_Y, SMALL_TOGGLE_WIDTH, "Мод", config.enabled, _ -> {
             config.enabled = !config.enabled;
             changed();
         });
-        addToggle(hudToggleX, HEADER_Y, SMALL_TOGGLE_WIDTH, "HUD", config.hudEnabled, button -> {
+        addToggle(hudToggleX, HEADER_Y, SMALL_TOGGLE_WIDTH, "HUD", config.hudEnabled, _ -> {
             config.hudEnabled = !config.hudEnabled;
             changed();
         });
-        addToggle(blockToggleX, HEADER_Y, BLOCK_TOGGLE_WIDTH, "Красить блоки", config.highlightOverloadedBlocks, button -> {
+        addToggle(blockToggleX, HEADER_Y, BLOCK_TOGGLE_WIDTH, "Красить блоки", config.highlightOverloadedBlocks, _ -> {
             config.highlightOverloadedBlocks = !config.highlightOverloadedBlocks;
             changed();
         });
-        addToggle(entityToggleX, HEADER_Y, entityToggleWidth, "Красить сущности", config.highlightOverloadedEntities, button -> {
+        addToggle(entityToggleX, HEADER_Y, entityToggleWidth, "Красить сущности", config.highlightOverloadedEntities, _ -> {
             config.highlightOverloadedEntities = !config.highlightOverloadedEntities;
             changed();
         });
@@ -78,26 +78,26 @@ final class ChunkLimiterConfigScreen extends Screen {
                 MIN_FILTER_WIDTH,
                 panelWidth - FILTER_X_OFFSET - PAGING_AREA_WIDTH
         );
-        addToggle(left + FILTER_X_OFFSET, NAVIGATION_Y, filterWidth, "Только ненулевые", config.showOnlyNonZero, button -> {
+        addToggle(left + FILTER_X_OFFSET, NAVIGATION_Y, filterWidth, "Только ненулевые", config.showOnlyNonZero, _ -> {
             config.showOnlyNonZero = !config.showOnlyNonZero;
             changed();
         });
 
-        addRenderableWidget(Button.builder(Component.literal("Блоки"), button -> {
+        addRenderableWidget(Button.builder(Component.literal("Блоки"), _ -> {
             entityTab = false;
             page = 0;
             rebuildWidgets();
         }).bounds(left, 55, 100, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Сущности"), button -> {
+        addRenderableWidget(Button.builder(Component.literal("Сущности"), _ -> {
             entityTab = true;
             page = 0;
             rebuildWidgets();
         }).bounds(left + 106, 55, 110, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("<"), button -> {
+        addRenderableWidget(Button.builder(Component.literal("<"), _ -> {
             if (page > 0) page--;
             rebuildWidgets();
         }).bounds(left + panelWidth - 76, 55, 34, 20).build());
-        addRenderableWidget(Button.builder(Component.literal(">"), button -> {
+        addRenderableWidget(Button.builder(Component.literal(">"), _ -> {
             if ((page + 1) * rowCount < allRows().size()) page++;
             rebuildWidgets();
         }).bounds(left + panelWidth - 36, 55, 34, 20).build());
@@ -116,11 +116,11 @@ final class ChunkLimiterConfigScreen extends Screen {
         limitField = addRenderableWidget(new EditBox(font, left + panelWidth - 304, inputY, 54, 20, Component.literal("Лимит")));
         limitField.setHint(Component.literal("лимит"));
         limitField.setValue("20");
-        addRenderableWidget(Button.builder(Component.literal("Добавить ID"), button -> addExact())
+        addRenderableWidget(Button.builder(Component.literal("Добавить ID"), _ -> addExact())
                 .bounds(left + panelWidth - 244, inputY, 112, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Новая группа"), button -> addGroup())
+        addRenderableWidget(Button.builder(Component.literal("Новая группа"), _ -> addGroup())
                 .bounds(left + panelWidth - 126, inputY, 126, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Готово"), button -> onClose())
+        addRenderableWidget(Button.builder(Component.literal("Готово"), _ -> onClose())
                 .bounds(width / 2 - 75, height - 32, 150, 20).build());
     }
 
@@ -131,15 +131,15 @@ final class ChunkLimiterConfigScreen extends Screen {
 
     private void addRowButtons(Row row, int y) {
         int right = left + panelWidth;
-        addRenderableWidget(Button.builder(Component.literal("−"), button -> changeLimit(row, -1))
+        addRenderableWidget(Button.builder(Component.literal("−"), _ -> changeLimit(row, -1))
                 .bounds(right - 148, y + 2, 28, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("+"), button -> changeLimit(row, 1))
+        addRenderableWidget(Button.builder(Component.literal("+"), _ -> changeLimit(row, 1))
                 .bounds(right - 116, y + 2, 28, 20).build());
         if (row.group()) {
-            addRenderableWidget(Button.builder(Component.literal("Состав"), button -> minecraft.gui.setScreen(new GroupEditScreen(this, row.key())))
+            addRenderableWidget(Button.builder(Component.literal("Состав"), _ -> minecraft.gui.setScreen(new GroupEditScreen(this, row.key())))
                     .bounds(right - 84, y + 2, 58, 20).build());
         }
-        addRenderableWidget(Button.builder(Component.literal("×"), button -> delete(row))
+        addRenderableWidget(Button.builder(Component.literal("×"), _ -> delete(row))
                 .bounds(right - 22, y + 2, 20, 20).build());
     }
 
@@ -161,7 +161,7 @@ final class ChunkLimiterConfigScreen extends Screen {
             if (group != null) group.limit = Math.max(1, group.limit + delta);
         } else {
             Map<String, Integer> limits = entityTab ? config.entities : config.blocks;
-            limits.computeIfPresent(row.key(), (id, limit) -> Math.max(1, limit + delta));
+            limits.computeIfPresent(row.key(), (_, limit) -> Math.max(1, limit + delta));
         }
         changed();
     }
