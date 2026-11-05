@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
+import org.jspecify.annotations.NullMarked;
 
 final class HudLayoutScreen extends Screen {
     private static final float SCALE_STEP = 0.1F;
@@ -51,6 +52,7 @@ final class HudLayoutScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
+    @NullMarked
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         if (super.mouseClicked(event, doubleClick)) return true;
@@ -64,6 +66,7 @@ final class HudLayoutScreen extends Screen {
         return false;
     }
 
+    @NullMarked
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
         if (!dragging) return super.mouseDragged(event, dragX, dragY);
@@ -74,6 +77,7 @@ final class HudLayoutScreen extends Screen {
         return true;
     }
 
+    @NullMarked
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
         if (dragging && event.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
