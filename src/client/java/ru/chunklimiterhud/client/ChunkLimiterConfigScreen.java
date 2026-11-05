@@ -14,17 +14,17 @@ import java.util.List;
 import java.util.Map;
 
 final class ChunkLimiterConfigScreen extends Screen {
-    private static final int HEADER_Y = 28;
+    private static final int HEADER_Y = 20;
+    private static final int SECOND_TOGGLE_Y = 44;
     private static final int TOGGLE_GAP = 6;
-    private static final int SMALL_TOGGLE_WIDTH = 112;
-    private static final int BLOCK_TOGGLE_WIDTH = 170;
-    private static final int MIN_ENTITY_TOGGLE_WIDTH = 100;
-    private static final int NAVIGATION_Y = 55;
+    private static final int NAVIGATION_Y = 68;
     private static final int FILTER_X_OFFSET = 222;
     private static final int PAGING_AREA_WIDTH = 82;
-    private static final int MIN_FILTER_WIDTH = 70;
-    private static final int AREA_ROW_Y = 82;
-    private static final int FIRST_LIMIT_ROW_Y = 109;
+    private static final int MIN_FILTER_WIDTH = 40;
+    private static final int AREA_ROW_Y = 92;
+    private static final int FIRST_LIMIT_ROW_Y = 116;
+    private static final int MIN_SAFE_WIDTH = 364;
+    private static final int MIN_SAFE_HEIGHT = 240;
     private static final int[] CHUNK_AREA_PRESETS = {1, 2, 3, 5, 8, 16, 32};
 
     private final Screen parent;
@@ -32,6 +32,7 @@ final class ChunkLimiterConfigScreen extends Screen {
     private int page;
     private EditBox idField;
     private EditBox limitField;
+    private String pendingId = "";
     private String status = "";
     private int left;
     private int panelWidth;
@@ -47,33 +48,27 @@ final class ChunkLimiterConfigScreen extends Screen {
     @Override
     protected void init() {
         HudConfig config = ChunkLimiterHudClient.config();
-        panelWidth = Math.min(620, width - 20);
+        panelWidth = Math.max(20, Math.min(620, width - 20));
         left = (width - panelWidth) / 2;
         firstRowY = FIRST_LIMIT_ROW_Y;
-        rowCount = Math.max(3, (height - 209) / 25);
+        rowCount = Math.max(1, (height - 84 - firstRowY) / 25);
 
-        int modToggleX = left;
-        int hudToggleX = modToggleX + SMALL_TOGGLE_WIDTH + TOGGLE_GAP;
-        int blockToggleX = hudToggleX + SMALL_TOGGLE_WIDTH + TOGGLE_GAP;
-        int entityToggleX = blockToggleX + BLOCK_TOGGLE_WIDTH + TOGGLE_GAP;
-        int entityToggleWidth = Math.max(
-                MIN_ENTITY_TOGGLE_WIDTH,
-                panelWidth - (entityToggleX - left)
-        );
+        int toggleWidth = (panelWidth - TOGGLE_GAP) / 2;
+        int secondColumnX = left + toggleWidth + TOGGLE_GAP;
 
-        addToggle(modToggleX, HEADER_Y, SMALL_TOGGLE_WIDTH, "Мод", config.enabled, _ -> {
+        addToggle(left, HEADER_Y, toggleWidth, "Мод", config.enabled, _ -> {
             config.enabled = !config.enabled;
             changed();
         });
-        addToggle(hudToggleX, HEADER_Y, SMALL_TOGGLE_WIDTH, "HUD", config.hudEnabled, _ -> {
+        addToggle(secondColumnX, HEADER_Y, toggleWidth, "HUD", config.hudEnabled, _ -> {
             config.hudEnabled = !config.hudEnabled;
             changed();
         });
-        addToggle(blockToggleX, HEADER_Y, BLOCK_TOGGLE_WIDTH, "Красить блоки", config.highlightOverloadedBlocks, _ -> {
+        addToggle(left, SECOND_TOGGLE_Y, toggleWidth, "Красить блоки", config.highlightOverloadedBlocks, _ -> {
             config.highlightOverloadedBlocks = !config.highlightOverloadedBlocks;
             changed();
         });
-        addToggle(entityToggleX, HEADER_Y, entityToggleWidth, "Красить сущности", config.highlightOverloadedEntities, _ -> {
+        addToggle(secondColumnX, SECOND_TOGGLE_Y, toggleWidth, "Красить сущности", config.highlightOverloadedEntities, _ -> {
             config.highlightOverloadedEntities = !config.highlightOverloadedEntities;
             changed();
         });
@@ -90,30 +85,36 @@ final class ChunkLimiterConfigScreen extends Screen {
             entityTab = false;
             page = 0;
             rebuildWidgets();
-        }).bounds(left, 55, 100, 20).build());
+        }).bounds(left, NAVIGATION_Y, 100, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Сущности"), _ -> {
             entityTab = true;
             page = 0;
             rebuildWidgets();
-        }).bounds(left + 106, 55, 110, 20).build());
+        }).bounds(left + 106, NAVIGATION_Y, 110, 20).build());
         addRenderableWidget(Button.builder(Component.literal("<"), _ -> {
             if (page > 0) page--;
             rebuildWidgets();
-        }).bounds(left + panelWidth - 76, 55, 34, 20).build());
+        }).bounds(left + panelWidth - 76, NAVIGATION_Y, 34, 20).build());
         addRenderableWidget(Button.builder(Component.literal(">"), _ -> {
             if ((page + 1) * rowCount < allRows().size()) page++;
             rebuildWidgets();
-        }).bounds(left + panelWidth - 36, 55, 34, 20).build());
+        }).bounds(left + panelWidth - 36, NAVIGATION_Y, 34, 20).build());
 
+        int areaSectionWidth = (panelWidth - TOGGLE_GAP) / 2;
+        int areaLabelWidth = Math.max(40, areaSectionWidth - 68);
         addRenderableWidget(Button.builder(Component.literal("−"), _ -> changeChunkAreaSize(-1))
-                .bounds(left, AREA_ROW_Y, 34, 20).build());
+                .bounds(left, AREA_ROW_Y, 30, 20).build());
         Button areaSizeButton = Button.builder(
                 Component.literal("Область: " + config.chunkAreaSize + "×" + config.chunkAreaSize),
                 _ -> cycleChunkAreaSize()
-        ).bounds(left + 40, AREA_ROW_Y, 160, 20).build();
+        ).bounds(left + 34, AREA_ROW_Y, areaLabelWidth, 20).build();
         addRenderableWidget(areaSizeButton);
         addRenderableWidget(Button.builder(Component.literal("+"), _ -> changeChunkAreaSize(1))
-                .bounds(left + 206, AREA_ROW_Y, 34, 20).build());
+                .bounds(left + areaSectionWidth - 30, AREA_ROW_Y, 30, 20).build());
+        addRenderableWidget(Button.builder(
+                Component.literal(entityTab ? "Выбрать сущность" : "Выбрать блок"),
+                _ -> minecraft.gui.setScreen(new RegistryPickerScreen(this, entityTab))
+        ).bounds(secondColumnX, AREA_ROW_Y, toggleWidth, 20).build());
 
         List<Row> all = allRows();
         int maxPage = Math.max(0, (all.size() - 1) / rowCount);
@@ -123,20 +124,27 @@ final class ChunkLimiterConfigScreen extends Screen {
         visibleRows = new ArrayList<>(all.subList(from, to));
         for (int index = 0; index < visibleRows.size(); index++) addRowButtons(visibleRows.get(index), firstRowY + index * 25);
 
-        int inputY = height - 67;
-        idField = addRenderableWidget(new EditBox(font, left, inputY, Math.max(160, panelWidth - 310), 20, Component.literal("ID или имя группы")));
+        int inputY = height - 72;
+        int limitWidth = 60;
+        int idWidth = Math.max(80, panelWidth - limitWidth - TOGGLE_GAP);
+        idField = addRenderableWidget(new EditBox(font, left, inputY, idWidth, 20, Component.literal("ID или имя группы")));
         idField.setHint(Component.literal(entityTab ? "minecraft:villager или имя группы" : "minecraft:hopper или имя группы"));
-        limitField = addRenderableWidget(new EditBox(font, left + panelWidth - 304, inputY, 54, 20, Component.literal("Лимит")));
+        idField.setValue(pendingId);
+        idField.setResponder(value -> pendingId = value);
+        limitField = addRenderableWidget(new EditBox(font, left + panelWidth - limitWidth, inputY, limitWidth, 20, Component.literal("Лимит")));
         limitField.setHint(Component.literal("лимит"));
         limitField.setValue("20");
+        int actionY = height - 48;
+        int actionWidth = (panelWidth - TOGGLE_GAP) / 2;
         addRenderableWidget(Button.builder(Component.literal("Добавить ID"), _ -> addExact())
-                .bounds(left + panelWidth - 244, inputY, 112, 20).build());
+                .bounds(left, actionY, actionWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Новая группа"), _ -> addGroup())
-                .bounds(left + panelWidth - 126, inputY, 126, 20).build());
+                .bounds(left + actionWidth + TOGGLE_GAP, actionY, actionWidth, 20).build());
+        int footerY = height - 24;
         addRenderableWidget(Button.builder(Component.literal("Настроить HUD"), _ -> minecraft.gui.setScreen(new HudLayoutScreen(this)))
-                .bounds(width / 2 - 155, height - 32, 150, 20).build());
+                .bounds(left, footerY, actionWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Готово"), _ -> onClose())
-                .bounds(width / 2 + 5, height - 32, 150, 20).build());
+                .bounds(left + actionWidth + TOGGLE_GAP, footerY, actionWidth, 20).build());
     }
 
     private void addToggle(int x, int y, int width, String label, boolean value, Button.OnPress press) {
@@ -225,6 +233,7 @@ final class ChunkLimiterConfigScreen extends Screen {
         }
         (entityTab ? ChunkLimiterHudClient.config().entities : ChunkLimiterHudClient.config().blocks).put(id.toString(), limit);
         status = "Добавлено: " + id;
+        pendingId = "";
         idField.setValue("");
         changed();
     }
@@ -254,6 +263,11 @@ final class ChunkLimiterConfigScreen extends Screen {
         }
     }
 
+    void selectRegistryId(String id, String displayName) {
+        pendingId = id;
+        status = "Выбрано: " + displayName;
+    }
+
     private void changed() {
         ChunkLimiterHudClient.applyConfigChanges();
         rebuildWidgets();
@@ -262,8 +276,9 @@ final class ChunkLimiterConfigScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         graphics.fill(0, 0, width, height, 0xFF111215);
-        graphics.fill(left - 6, 20, left + panelWidth + 6, height - 38, 0xEE1B1D21);
-        graphics.centeredText(font, title, width / 2, 8, 0xFFFFFFFF);
+        if (width < MIN_SAFE_WIDTH || height < MIN_SAFE_HEIGHT) return;
+        graphics.fill(left - 6, 16, left + panelWidth + 6, height - 28, 0xEE1B1D21);
+        graphics.centeredText(font, title, width / 2, 5, 0xFFFFFFFF);
         for (int index = 0; index < visibleRows.size(); index++) {
             Row row = visibleRows.get(index);
             int y = firstRowY + index * 25;
@@ -273,8 +288,8 @@ final class ChunkLimiterConfigScreen extends Screen {
             graphics.text(font, row.label(), left + 25, y + 4, 0xFFFFFFFF, true);
             graphics.text(font, "Лимит: " + row.limit(), left + panelWidth - 220, y + 7, 0xFFB8BBC2, false);
         }
-        if (!status.isEmpty()) graphics.text(font, status, left, height - 43, 0xFFFFAA55, true);
-        graphics.text(font, "Страница " + (page + 1), left + panelWidth - 165, 61, 0xFF999CA3, false);
+        if (!status.isEmpty()) graphics.text(font, status, left, height - 84, 0xFFFFAA55, true);
+        graphics.text(font, "Страница " + (page + 1), left + panelWidth - 165, NAVIGATION_Y + 6, 0xFF999CA3, false);
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 

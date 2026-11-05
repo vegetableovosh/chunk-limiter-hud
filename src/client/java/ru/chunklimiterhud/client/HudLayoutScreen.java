@@ -10,6 +10,8 @@ import org.jspecify.annotations.NullMarked;
 
 final class HudLayoutScreen extends Screen {
     private static final float SCALE_STEP = 0.1F;
+    private static final int MIN_SAFE_WIDTH = 240;
+    private static final int MIN_SAFE_HEIGHT = 130;
 
     private final Screen parent;
     private boolean dragging;
@@ -27,23 +29,31 @@ final class HudLayoutScreen extends Screen {
         clampPosition();
 
         int scaleY = height - 56;
+        int scaleControlsWidth = Math.max(120, Math.min(210, width - 20));
+        int scaleLeft = (width - scaleControlsWidth) / 2;
+        int scaleButtonWidth = Math.min(40, scaleControlsWidth / 4);
+        int scaleLabelWidth = Math.max(40, scaleControlsWidth - scaleButtonWidth * 2 - 10);
         addRenderableWidget(Button.builder(Component.literal("−"), _ -> changeScale(-SCALE_STEP))
-                .bounds(width / 2 - 105, scaleY, 40, 20).build());
+                .bounds(scaleLeft, scaleY, scaleButtonWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Масштаб: " + Math.round(config.hudScale * 100) + "%"), _ -> resetScale())
-                .bounds(width / 2 - 60, scaleY, 120, 20).build());
+                .bounds(scaleLeft + scaleButtonWidth + 5, scaleY, scaleLabelWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("+"), _ -> changeScale(SCALE_STEP))
-                .bounds(width / 2 + 65, scaleY, 40, 20).build());
+                .bounds(scaleLeft + scaleControlsWidth - scaleButtonWidth, scaleY, scaleButtonWidth, 20).build());
 
+        int footerWidth = Math.max(120, Math.min(310, width - 20));
+        int footerLeft = (width - footerWidth) / 2;
+        int footerButtonWidth = (footerWidth - 10) / 2;
         addRenderableWidget(Button.builder(Component.literal("Сбросить"), _ -> resetLayout())
-                .bounds(width / 2 - 155, height - 30, 150, 20).build());
+                .bounds(footerLeft, height - 30, footerButtonWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Готово"), _ -> onClose())
-                .bounds(width / 2 + 5, height - 30, 150, 20).build());
+                .bounds(footerLeft + footerButtonWidth + 10, height - 30, footerButtonWidth, 20).build());
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         HudConfig config = ChunkLimiterHudClient.config();
         graphics.fill(0, 0, width, height, 0xB0111215);
+        if (width < MIN_SAFE_WIDTH || height < MIN_SAFE_HEIGHT) return;
         ChunkLimiterHudClient.renderHudPreview(graphics, config.x, config.y, config.hudScale);
 
         graphics.fill(0, 0, width, 28, 0xE827292E);
