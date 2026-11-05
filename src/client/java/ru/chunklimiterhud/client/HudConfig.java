@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 final class HudConfig {
+    static final float MIN_HUD_SCALE = 0.5F;
+    static final float MAX_HUD_SCALE = 2.0F;
+    static final float DEFAULT_HUD_SCALE = 1.0F;
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("chunk_limiter_hud.json");
 
@@ -23,6 +27,7 @@ final class HudConfig {
     int updateIntervalTicks = 20;
     int x = 8;
     int y = 8;
+    float hudScale = DEFAULT_HUD_SCALE;
     boolean showOnlyNonZero = false;
     boolean highlightOverloadedBlocks = true;
     boolean highlightOverloadedEntities = true;
@@ -82,6 +87,8 @@ final class HudConfig {
         maxHighlightedEntities = Math.max(1, Math.min(512, maxHighlightedEntities));
         x = Math.max(0, x);
         y = Math.max(0, y);
+        if (!Float.isFinite(hudScale)) hudScale = DEFAULT_HUD_SCALE;
+        hudScale = Math.max(MIN_HUD_SCALE, Math.min(MAX_HUD_SCALE, hudScale));
         if (entities == null) entities = new LinkedHashMap<>();
         if (blocks == null) blocks = new LinkedHashMap<>();
         if (groups == null) groups = new LinkedHashMap<>();

@@ -112,31 +112,65 @@ public final class ChunkLimiterHudClient implements ClientModInitializer {
         Minecraft client = Minecraft.getInstance();
         if (!config.enabled || !config.hudEnabled || client.level == null || client.player == null) return;
 
+        HudContent content = hudContent();
+        HudSize size = scaledSize(content, config.hudScale);
+        int x = Math.min(config.x, Math.max(0, graphics.guiWidth() - size.width()));
+        int y = Math.min(config.y, Math.max(0, graphics.guiHeight() - size.height()));
+        drawHud(graphics, content, x, y, config.hudScale);
+    }
+
+    private HudContent hudContent() {
+        Font font = Minecraft.getInstance().font;
         List<HudEntry> entries = buildHudEntries();
-        Font font = client.font;
         String title = "Лимиты чанка  " + snapshot.chunk().x() + ", " + snapshot.chunk().z();
         int width = Math.max(174, font.width(title) + 16);
         for (HudEntry entry : entries) {
             width = Math.max(width, font.width(entry.title()) + 34);
             width = Math.max(width, font.width(entry.details()) + 34);
         }
-        int height = 19 + entries.size() * 24 + 5;
-        int x = Math.min(config.x, Math.max(0, graphics.guiWidth() - width));
-        int y = Math.min(config.y, Math.max(0, graphics.guiHeight() - height));
-        graphics.fill(x, y, x + width, y + height, 0xE018191C);
-        graphics.outline(x, y, width, height, 0xFF45484F);
-        graphics.fill(x + 1, y + 1, x + width - 1, y + 18, 0xFF27292E);
-        graphics.text(font, title, x + 7, y + 5, WHITE, true);
+        return new HudContent(title, entries, width, 24 + entries.size() * 24);
+    }
 
-        int rowY = y + 20;
-        for (HudEntry entry : entries) {
-            graphics.fill(x + 3, rowY, x + width - 3, rowY + 21, 0xE823252A);
-            graphics.fill(x + 3, rowY, x + 5, rowY + 21, entry.color());
-            graphics.item(entry.icon(), x + 8, rowY + 3);
-            graphics.text(font, entry.title(), x + 28, rowY + 2, WHITE, true);
-            graphics.text(font, entry.details(), x + 28, rowY + 11, entry.color(), true);
+    private static HudSize scaledSize(HudContent content, float scale) {
+        return new HudSize(
+                (int) Math.ceil(content.width() * scale),
+                (int) Math.ceil(content.height() * scale)
+        );
+    }
+
+    private static void drawHud(GuiGraphicsExtractor graphics, HudContent content, int x, int y, float scale) {
+        Font font = Minecraft.getInstance().font;
+        int width = content.width();
+        int height = content.height();
+
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(x, y);
+        graphics.pose().scale(scale, scale);
+        graphics.fill(0, 0, width, height, 0xE018191C);
+        graphics.outline(0, 0, width, height, 0xFF45484F);
+        graphics.fill(1, 1, width - 1, 18, 0xFF27292E);
+        graphics.text(font, content.title(), 7, 5, WHITE, true);
+
+        int rowY = 20;
+        for (HudEntry entry : content.entries()) {
+            graphics.fill(3, rowY, width - 3, rowY + 21, 0xE823252A);
+            graphics.fill(3, rowY, 5, rowY + 21, entry.color());
+            graphics.item(entry.icon(), 8, rowY + 3);
+            graphics.text(font, entry.title(), 28, rowY + 2, WHITE, true);
+            graphics.text(font, entry.details(), 28, rowY + 11, entry.color(), true);
             rowY += 24;
         }
+        graphics.pose().popMatrix();
+    }
+
+    static HudSize currentHudSize(float scale) {
+        if (instance == null) return new HudSize(0, 0);
+        return scaledSize(instance.hudContent(), scale);
+    }
+
+    static void renderHudPreview(GuiGraphicsExtractor graphics, int x, int y, float scale) {
+        if (instance == null) return;
+        drawHud(graphics, instance.hudContent(), x, y, scale);
     }
 
     private List<HudEntry> buildHudEntries() {
@@ -467,6 +501,10 @@ public final class ChunkLimiterHudClient implements ClientModInitializer {
     private static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
+
+    record HudSize(int width, int height) {}
+
+    private record HudContent(String title, List<HudEntry> entries, int width, int height) {}
 
     private record HudEntry(String title, String details, int color, ItemStack icon) {}
 }

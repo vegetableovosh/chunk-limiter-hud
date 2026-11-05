@@ -120,8 +120,10 @@ final class ChunkLimiterConfigScreen extends Screen {
                 .bounds(left + panelWidth - 244, inputY, 112, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Новая группа"), _ -> addGroup())
                 .bounds(left + panelWidth - 126, inputY, 126, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Настроить HUD"), _ -> minecraft.gui.setScreen(new HudLayoutScreen(this)))
+                .bounds(width / 2 - 155, height - 32, 150, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Готово"), _ -> onClose())
-                .bounds(width / 2 - 75, height - 32, 150, 20).build());
+                .bounds(width / 2 + 5, height - 32, 150, 20).build());
     }
 
     private void addToggle(int x, int y, int width, String label, boolean value, Button.OnPress press) {
