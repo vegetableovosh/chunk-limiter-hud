@@ -121,7 +121,9 @@ public final class ChunkLimiterHudClient implements ClientModInitializer {
     private HudContent hudContent() {
         Font font = Minecraft.getInstance().font;
         List<HudEntry> entries = buildHudEntries();
-        String title = "Лимиты чанка  " + snapshot.chunk().x() + ", " + snapshot.chunk().z();
+        int totalChunks = snapshot.areaSize() * snapshot.areaSize();
+        String title = "Лимиты " + snapshot.areaSize() + "×" + snapshot.areaSize()
+                + "  •  чанки " + snapshot.loadedChunks() + "/" + totalChunks;
         int width = Math.max(174, font.width(title) + 16);
         for (HudEntry entry : entries) {
             width = Math.max(width, font.width(entry.title()) + 34);
@@ -277,7 +279,7 @@ public final class ChunkLimiterHudClient implements ClientModInitializer {
         if (!config.enabled || !config.highlightOverloadedEntities || client.level == null) return;
         for (Entity entity : client.level.entitiesForRendering()) {
             if (highlightedEntityIds.size() >= config.maxHighlightedEntities) break;
-            if (entity.chunkPosition().equals(snapshot.chunk()) && entityBelongsToOverloadedLimit(entity)) {
+            if (snapshot.contains(entity.chunkPosition()) && entityBelongsToOverloadedLimit(entity)) {
                 highlightedEntityIds.add(entity.getId());
             }
         }

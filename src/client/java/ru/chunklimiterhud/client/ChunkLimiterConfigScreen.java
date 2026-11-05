@@ -23,6 +23,9 @@ final class ChunkLimiterConfigScreen extends Screen {
     private static final int FILTER_X_OFFSET = 222;
     private static final int PAGING_AREA_WIDTH = 82;
     private static final int MIN_FILTER_WIDTH = 70;
+    private static final int AREA_ROW_Y = 82;
+    private static final int FIRST_LIMIT_ROW_Y = 109;
+    private static final int[] CHUNK_AREA_PRESETS = {1, 2, 3, 5, 8, 16, 32};
 
     private final Screen parent;
     private boolean entityTab;
@@ -46,8 +49,8 @@ final class ChunkLimiterConfigScreen extends Screen {
         HudConfig config = ChunkLimiterHudClient.config();
         panelWidth = Math.min(620, width - 20);
         left = (width - panelWidth) / 2;
-        firstRowY = 82;
-        rowCount = Math.max(3, (height - 182) / 25);
+        firstRowY = FIRST_LIMIT_ROW_Y;
+        rowCount = Math.max(3, (height - 209) / 25);
 
         int modToggleX = left;
         int hudToggleX = modToggleX + SMALL_TOGGLE_WIDTH + TOGGLE_GAP;
@@ -101,6 +104,16 @@ final class ChunkLimiterConfigScreen extends Screen {
             if ((page + 1) * rowCount < allRows().size()) page++;
             rebuildWidgets();
         }).bounds(left + panelWidth - 36, 55, 34, 20).build());
+
+        addRenderableWidget(Button.builder(Component.literal("−"), _ -> changeChunkAreaSize(-1))
+                .bounds(left, AREA_ROW_Y, 34, 20).build());
+        Button areaSizeButton = Button.builder(
+                Component.literal("Область: " + config.chunkAreaSize + "×" + config.chunkAreaSize),
+                _ -> cycleChunkAreaSize()
+        ).bounds(left + 40, AREA_ROW_Y, 160, 20).build();
+        addRenderableWidget(areaSizeButton);
+        addRenderableWidget(Button.builder(Component.literal("+"), _ -> changeChunkAreaSize(1))
+                .bounds(left + 206, AREA_ROW_Y, 34, 20).build());
 
         List<Row> all = allRows();
         int maxPage = Math.max(0, (all.size() - 1) / rowCount);
@@ -165,6 +178,30 @@ final class ChunkLimiterConfigScreen extends Screen {
             Map<String, Integer> limits = entityTab ? config.entities : config.blocks;
             limits.computeIfPresent(row.key(), (_, limit) -> Math.max(1, limit + delta));
         }
+        changed();
+    }
+
+    private void changeChunkAreaSize(int delta) {
+        HudConfig config = ChunkLimiterHudClient.config();
+        config.chunkAreaSize = Math.max(
+                HudConfig.MIN_CHUNK_AREA_SIZE,
+                Math.min(HudConfig.MAX_CHUNK_AREA_SIZE, config.chunkAreaSize + delta)
+        );
+        status = "Область подсчёта: " + config.chunkAreaSize + "×" + config.chunkAreaSize + " чанков";
+        changed();
+    }
+
+    private void cycleChunkAreaSize() {
+        HudConfig config = ChunkLimiterHudClient.config();
+        int nextSize = CHUNK_AREA_PRESETS[0];
+        for (int preset : CHUNK_AREA_PRESETS) {
+            if (preset > config.chunkAreaSize) {
+                nextSize = preset;
+                break;
+            }
+        }
+        config.chunkAreaSize = nextSize;
+        status = "Область подсчёта: " + nextSize + "×" + nextSize + " чанков";
         changed();
     }
 

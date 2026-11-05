@@ -18,6 +18,8 @@ final class HudConfig {
     static final float MIN_HUD_SCALE = 0.5F;
     static final float MAX_HUD_SCALE = 2.0F;
     static final float DEFAULT_HUD_SCALE = 1.0F;
+    static final int MIN_CHUNK_AREA_SIZE = 1;
+    static final int MAX_CHUNK_AREA_SIZE = 32;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("chunk_limiter_hud.json");
@@ -28,6 +30,7 @@ final class HudConfig {
     int x = 8;
     int y = 8;
     float hudScale = DEFAULT_HUD_SCALE;
+    int chunkAreaSize = MIN_CHUNK_AREA_SIZE;
     boolean showOnlyNonZero = false;
     boolean highlightOverloadedBlocks = true;
     boolean highlightOverloadedEntities = true;
@@ -89,6 +92,7 @@ final class HudConfig {
         y = Math.max(0, y);
         if (!Float.isFinite(hudScale)) hudScale = DEFAULT_HUD_SCALE;
         hudScale = Math.max(MIN_HUD_SCALE, Math.min(MAX_HUD_SCALE, hudScale));
+        chunkAreaSize = Math.max(MIN_CHUNK_AREA_SIZE, Math.min(MAX_CHUNK_AREA_SIZE, chunkAreaSize));
         if (entities == null) entities = new LinkedHashMap<>();
         if (blocks == null) blocks = new LinkedHashMap<>();
         if (groups == null) groups = new LinkedHashMap<>();
