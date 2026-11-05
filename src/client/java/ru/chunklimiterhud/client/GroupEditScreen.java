@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class GroupEditScreen extends Screen {
+    private static final int MIN_SAFE_WIDTH = 240;
+    private static final int MIN_SAFE_HEIGHT = 160;
+
     private final Screen parent;
     private final String groupName;
     private EditBox memberField;
@@ -35,23 +38,23 @@ final class GroupEditScreen extends Screen {
             onClose();
             return;
         }
-        panelWidth = Math.min(520, width - 20);
+        panelWidth = Math.max(130, Math.min(520, width - 20));
         left = (width - panelWidth) / 2;
         rowCount = Math.max(3, (height - 150) / 25);
 
-        addRenderableWidget(Button.builder(Component.literal("Лимит −"), button -> {
+        addRenderableWidget(Button.builder(Component.literal("Лимит −"), _ -> {
             group.limit = Math.max(1, group.limit - 1);
             changed();
         }).bounds(left, 30, 90, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Лимит +"), button -> {
+        addRenderableWidget(Button.builder(Component.literal("Лимит +"), _ -> {
             group.limit++;
             changed();
         }).bounds(left + 96, 30, 90, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("<"), button -> {
+        addRenderableWidget(Button.builder(Component.literal("<"), _ -> {
             if (page > 0) page--;
             rebuildWidgets();
         }).bounds(left + panelWidth - 76, 30, 34, 20).build());
-        addRenderableWidget(Button.builder(Component.literal(">"), button -> {
+        addRenderableWidget(Button.builder(Component.literal(">"), _ -> {
             if ((page + 1) * rowCount < group.members.size()) page++;
             rebuildWidgets();
         }).bounds(left + panelWidth - 36, 30, 34, 20).build());
@@ -64,7 +67,7 @@ final class GroupEditScreen extends Screen {
         for (int index = 0; index < visibleMembers.size(); index++) {
             String member = visibleMembers.get(index);
             int y = 58 + index * 25;
-            addRenderableWidget(Button.builder(Component.literal("Удалить"), button -> {
+            addRenderableWidget(Button.builder(Component.literal("Удалить"), _ -> {
                 group.members.remove(member);
                 changed();
             }).bounds(left + panelWidth - 70, y + 2, 68, 20).build());
@@ -73,9 +76,9 @@ final class GroupEditScreen extends Screen {
         int inputY = height - 61;
         memberField = addRenderableWidget(new EditBox(font, left, inputY, panelWidth - 126, 20, Component.literal("ID объекта")));
         memberField.setHint(Component.literal(group.isEntity() ? "minecraft:villager" : "minecraft:hopper"));
-        addRenderableWidget(Button.builder(Component.literal("Добавить"), button -> addMember())
+        addRenderableWidget(Button.builder(Component.literal("Добавить"), _ -> addMember())
                 .bounds(left + panelWidth - 120, inputY, 120, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Назад"), button -> onClose())
+        addRenderableWidget(Button.builder(Component.literal("Назад"), _ -> onClose())
                 .bounds(width / 2 - 75, height - 31, 150, 20).build());
     }
 
@@ -108,6 +111,7 @@ final class GroupEditScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         graphics.fill(0, 0, width, height, 0xFF111215);
+        if (width < MIN_SAFE_WIDTH || height < MIN_SAFE_HEIGHT) return;
         graphics.fill(left - 6, 20, left + panelWidth + 6, height - 37, 0xEE1B1D21);
         HudConfig.Group group = group();
         graphics.centeredText(font, title, width / 2, 8, 0xFFFFFFFF);
