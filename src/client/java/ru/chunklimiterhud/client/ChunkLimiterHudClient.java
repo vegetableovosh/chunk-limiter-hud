@@ -215,7 +215,7 @@ public final class ChunkLimiterHudClient implements ClientModInitializer {
         int maximum = Math.min(config.maxHighlightedBlocks, overloaded.size());
         GizmoStyle style = GizmoStyle.strokeAndFill(0xFFFF3030, 2.5F, 0x55FF0000);
         for (int index = 0; index < maximum; index++) {
-            Gizmos.cuboid(overloaded.get(index), 0.006F, style);
+            Gizmos.cuboid(overloaded.get(index), 0.006F, style).setAlwaysOnTop();
         }
     }
 
