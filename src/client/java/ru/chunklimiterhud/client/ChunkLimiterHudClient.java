@@ -47,7 +47,6 @@ public final class ChunkLimiterHudClient implements ClientModInitializer {
     static final String MOD_ID = "chunk_limiter_hud";
     static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private static final int WHITE = 0xFFFFFFFF;
-    private static final int GRAY = 0xFFAAAAAA;
     private static final int GREEN = 0xFF55FF55;
     private static final int YELLOW = 0xFFFFFF55;
     private static final int RED = 0xFFFF5555;
@@ -103,8 +102,8 @@ public final class ChunkLimiterHudClient implements ClientModInitializer {
         });
 
         HudElementRegistry.addLast(id("limits"), this::renderHud);
-        LevelExtractionEvents.END_EXTRACTION.register(context -> renderOverloadedBlocks());
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, context) -> registerCommands(dispatcher));
+        LevelExtractionEvents.END_EXTRACTION.register(_ -> renderOverloadedBlocks());
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> registerCommands(dispatcher));
         LOGGER.info("Chunk Limiter HUD initialized");
     }
 
@@ -317,7 +316,7 @@ public final class ChunkLimiterHudClient implements ClientModInitializer {
                     ctx.getSource().sendFeedback(Component.literal("Chunk HUD: " + (config.hudEnabled ? "включён" : "выключен")));
                     return 1;
                 }))
-                .then(literal("menu").executes(ctx -> {
+                .then(literal("menu").executes(_ -> {
                     openConfig(null);
                     return 1;
                 }))
